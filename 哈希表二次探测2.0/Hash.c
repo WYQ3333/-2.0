@@ -14,9 +14,9 @@ void HashTableInit(HashTable *pHT, size_t capacity, HashFuncType hash)
 
 int HashSearch(HashTable *pHT, KeyType key)
 {
-	size_t index = pHT->hash(key, pHT->capacity);//查找的时候一定先要求下标
-	//size_t index = origin_index;
-	//int i = 1;
+	size_t origin_index = pHT->hash(key, pHT->capacity);//查找的时候一定先要求下标
+	size_t index = origin_index;
+	int i = 1;
 	while (1)
 	{
 		if (pHT->array[index].state == EMPTY)//没找到
@@ -59,15 +59,18 @@ int HashInsert(HashTable *pHT, KeyType key)//插入
 	{
 		return -1;//有值插入失败,防止重复插入
 	}
-	EcpandIfRequired(pHT);//扩容
-	size_t index = pHT->hash(key, pHT->capacity);
+	EcpandIfRequired(pHT);//扩容	
+	size_t origin_index = pHT->hash(key, pHT->capacity);//查找的时候一定先要求下标
+	size_t index = origin_index;
+	int i = 1;
 	while (1)
 	{
 		if (pHT->array[index].state != EXIST)
 		{
 			break;
-		}
-		index = (index + 1) % pHT->capacity;
+		}		
+		index = (origin_index + i*i) % pHT->capacity;
+		i++;
 	}
 	pHT->array[index].key = key;
 	pHT->array[index].state = EXIST;
@@ -76,7 +79,9 @@ int HashInsert(HashTable *pHT, KeyType key)//插入
 
 int HashDelete(HashTable *pHT, KeyType key)//哈希删除
 {
-	size_t index = pHT->hash(key, pHT->capacity);
+	size_t origin_index = pHT->hash(key, pHT->capacity);//查找的时候一定先要求下标
+	size_t index = origin_index;
+	int i = 1;
 	while (pHT->array[index].state != EMPTY)
 	{
 		if (pHT->array[index].state == EXIST&&pHT->array[index].key == key)
@@ -85,7 +90,8 @@ int HashDelete(HashTable *pHT, KeyType key)//哈希删除
 			pHT->size--;//注意删除后的元素个数要减一
 			return index;
 		}
-		index = (index + 1) % pHT->capacity;
+		index = (origin_index + i*i) % pHT->capacity;
+		i++;
 	}
 	return -1;//删除失败
 }
